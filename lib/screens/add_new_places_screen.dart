@@ -1,5 +1,9 @@
-import 'package:favorite_places_app/data/place.dart';
+import 'dart:io';
+
+import 'package:favorite_places_app/models/place.dart';
 import 'package:favorite_places_app/providers/places_provider.dart';
+import 'package:favorite_places_app/widgets/image_input.dart';
+import 'package:favorite_places_app/widgets/location_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,9 +18,13 @@ class AddNewPlacesScreenState extends ConsumerState<AddNewPlacesScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _titleController = TextEditingController();
+  late File? _selectedImage;
+
+  void _onPickedImage(File image) {
+    _selectedImage = image;
+  }
 
   void _navigationBack() {
-    Navigator.of(context).pop();
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -24,27 +32,22 @@ class AddNewPlacesScreenState extends ConsumerState<AddNewPlacesScreen> {
         duration: Duration(seconds: 2),
       ),
     );
+    Navigator.of(context).pop();
   }
 
   void _saveForm(PlacesNotifier placesNotifier) {
     final currentState = _formKey.currentState;
     if (currentState == null) return;
 
-    if (!currentState.validate()) return;
+    if (!currentState.validate() || _selectedImage == null) return;
 
     final newPlace = Place(
-      id: DateTime.now().toString(),
       title: _titleController.text,
+      image: _selectedImage,
     );
 
     placesNotifier.addPlace(newPlace);
     _navigationBack();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    ref.read(placesProvider);
   }
 
   @override
@@ -60,9 +63,15 @@ class AddNewPlacesScreenState extends ConsumerState<AddNewPlacesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Place'),
+        title: Text(
+          'Add New Place',
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        backgroundColor: theme.colorScheme.surfaceDim,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -82,11 +91,28 @@ class AddNewPlacesScreenState extends ConsumerState<AddNewPlacesScreen> {
                 },
               ),
               const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () => _saveForm(placesNotifier),
-                child: const Text(
-                  'Submit',
-                ),
+              ImageInput(
+                onPickImage: _onPickedImage,
+              ),
+              const SizedBox(height: 12),
+              const LocationInput(),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                    child: const Text('Cancel'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    onPressed: () => _saveForm(placesNotifier),
+                    label: const Text('Add Place'),
+                    icon: const Icon(Icons.add),
+                  )
+                ],
               ),
             ],
           ),

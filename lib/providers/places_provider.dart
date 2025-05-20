@@ -1,4 +1,4 @@
-import 'package:favorite_places_app/data/place.dart';
+import 'package:favorite_places_app/models/place.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class PlacesNotifier extends Notifier<List<Place>> {

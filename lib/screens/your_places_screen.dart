@@ -1,4 +1,4 @@
-import 'package:favorite_places_app/data/place.dart';
+import 'package:favorite_places_app/models/place.dart';
 import 'package:favorite_places_app/providers/places_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,12 +35,17 @@ class YourPlacesScreenState extends ConsumerState<YourPlacesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final places = ref.watch(placesProvider);
     final placesNotifier = ref.read(placesProvider.notifier);
 
-    Widget body = const Center(
+    final TextStyle? textStyle =
+        theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface);
+
+    Widget body = Center(
       child: Text(
         'No places added yet.',
+        style: textStyle,
       ),
     );
 
@@ -64,7 +69,20 @@ class YourPlacesScreenState extends ConsumerState<YourPlacesScreen> {
               ),
             ),
             child: ListTile(
-              title: Text(place.title),
+              leading: CircleAvatar(
+                backgroundImage: FileImage(place.image!),
+                radius: 26,
+              ),
+              title: Text(
+                place.title,
+                style: textStyle,
+              ),
+              onTap: () {
+                Navigator.of(context).pushNamed(
+                  Routes.placeDetails.path,
+                  arguments: place,
+                );
+              },
             ),
           );
         },
@@ -73,9 +91,13 @@ class YourPlacesScreenState extends ConsumerState<YourPlacesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Your Places',
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
+        backgroundColor: theme.colorScheme.surfaceDim,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -85,7 +107,10 @@ class YourPlacesScreenState extends ConsumerState<YourPlacesScreen> {
           ),
         ],
       ),
-      body: body,
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: body,
+      ),
     );
   }
 }
