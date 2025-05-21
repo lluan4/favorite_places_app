@@ -1,4 +1,5 @@
 import 'package:favorite_places_app/models/place.dart';
+import 'package:favorite_places_app/widgets/map.dart';
 import 'package:flutter/material.dart';
 
 import 'package:favorite_places_app/screens/place_details_screen.dart';
@@ -8,7 +9,8 @@ import 'package:favorite_places_app/screens/your_places_screen.dart';
 enum Routes {
   yourPlaces('/'),
   addNewPlaces('/add-place'),
-  placeDetails('/place-details');
+  placeDetails('/place-details'),
+  mapScreen('/map-screen');
 
   final String path;
 
@@ -25,5 +27,13 @@ Map<String, Widget Function(BuildContext)> routes = {
           'Esperado um Place em arguments para ${Routes.placeDetails.path}');
     }
     return PlaceDetailsScreen(place: args);
+  },
+  Routes.mapScreen.path: (context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is! Place) {
+      throw FlutterError(
+          'Esperado um Place em arguments para ${Routes.mapScreen.path}');
+    }
+    return MapScreen(place: args);
   },
 };

@@ -48,7 +48,6 @@ class AddNewPlacesScreenState extends ConsumerState<AddNewPlacesScreen> {
     final currentState = _formKey.currentState;
     if (currentState == null) return;
 
-    print(_imageBytes);
     if (!currentState.validate() ||
         _selectedImage == null ||
         _pickedLocation == null ||
