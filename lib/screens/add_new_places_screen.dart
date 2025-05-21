@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:favorite_places_app/models/place.dart';
 import 'package:favorite_places_app/providers/places_provider.dart';
@@ -6,6 +7,7 @@ import 'package:favorite_places_app/widgets/image_input.dart';
 import 'package:favorite_places_app/widgets/location_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:location/location.dart';
 
 class AddNewPlacesScreen extends ConsumerStatefulWidget {
   const AddNewPlacesScreen({super.key});
@@ -18,10 +20,17 @@ class AddNewPlacesScreenState extends ConsumerState<AddNewPlacesScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _titleController = TextEditingController();
-  late File? _selectedImage;
+  File? _selectedImage;
+  LocationData? _pickedLocation;
+  Uint8List? _imageBytes;
 
   void _onPickedImage(File image) {
     _selectedImage = image;
+  }
+
+  void _onSelectLocation(LocationData location, Uint8List imageBytes) {
+    _imageBytes = imageBytes;
+    _pickedLocation = location;
   }
 
   void _navigationBack() {
@@ -35,15 +44,21 @@ class AddNewPlacesScreenState extends ConsumerState<AddNewPlacesScreen> {
     Navigator.of(context).pop();
   }
 
-  void _saveForm(PlacesNotifier placesNotifier) {
+  void _saveForm(PlacesNotifier placesNotifier) async {
     final currentState = _formKey.currentState;
     if (currentState == null) return;
 
-    if (!currentState.validate() || _selectedImage == null) return;
+    print(_imageBytes);
+    if (!currentState.validate() ||
+        _selectedImage == null ||
+        _pickedLocation == null ||
+        _imageBytes == null) return;
 
-    final newPlace = Place(
+    final newPlace = await Place.create(
       title: _titleController.text,
       image: _selectedImage,
+      location: _pickedLocation!,
+      imageBytes: _imageBytes!,
     );
 
     placesNotifier.addPlace(newPlace);
@@ -95,7 +110,9 @@ class AddNewPlacesScreenState extends ConsumerState<AddNewPlacesScreen> {
                 onPickImage: _onPickedImage,
               ),
               const SizedBox(height: 12),
-              const LocationInput(),
+              LocationInput(
+                onSelectLocation: _onSelectLocation,
+              ),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,

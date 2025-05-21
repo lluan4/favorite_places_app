@@ -41,6 +41,8 @@ class YourPlacesScreenState extends ConsumerState<YourPlacesScreen> {
 
     final TextStyle? textStyle =
         theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface);
+    final TextStyle? subtitleStyle =
+        theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface);
 
     Widget body = Center(
       child: Text(
@@ -76,6 +78,10 @@ class YourPlacesScreenState extends ConsumerState<YourPlacesScreen> {
               title: Text(
                 place.title,
                 style: textStyle,
+              ),
+              subtitle: Text(
+                place.address,
+                style: subtitleStyle,
               ),
               onTap: () {
                 Navigator.of(context).pushNamed(
