@@ -29,6 +29,7 @@ class Place {
     File? image,
     required LocationData location,
     required Uint8List imageBytes,
+    String? id,
   }) async {
     String address;
     try {
@@ -49,7 +50,7 @@ class Place {
     }
 
     return Place._(
-      id: _uuid.v4(),
+      id: id ?? _uuid.v4(),
       title: title,
       image: image,
       location: location,

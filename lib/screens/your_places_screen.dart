@@ -13,10 +13,13 @@ class YourPlacesScreen extends ConsumerStatefulWidget {
 }
 
 class YourPlacesScreenState extends ConsumerState<YourPlacesScreen> {
+  late Future<void> _placesFuture;
+
   @override
   void initState() {
     super.initState();
     ref.read(placesProvider);
+    _placesFuture = ref.read(placesProvider.notifier).loadPlaces();
   }
 
   void _onDismissed(
@@ -52,47 +55,41 @@ class YourPlacesScreenState extends ConsumerState<YourPlacesScreen> {
     );
 
     if (places.isNotEmpty) {
-      body = ListView.builder(
-        itemCount: places.length,
-        itemBuilder: (context, index) {
-          final place = places[index];
-          return Dismissible(
-            key: ValueKey(place.id),
-            direction: DismissDirection.endToStart,
-            onDismissed: (_) => _onDismissed(context, placesNotifier, place),
-            background: Container(
-              color: Theme.of(context).colorScheme.error,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
-              child: const Icon(
-                Icons.delete,
-                color: Colors.white,
-                size: 40,
-              ),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundImage: FileImage(place.image!),
-                radius: 26,
-              ),
-              title: Text(
-                place.title,
-                style: textStyle,
-              ),
-              subtitle: Text(
-                place.address,
-                style: subtitleStyle,
-              ),
-              onTap: () {
-                Navigator.of(context).pushNamed(
-                  Routes.placeDetails.path,
-                  arguments: place,
-                );
-              },
-            ),
-          );
-        },
-      );
+      body = FutureBuilder(
+          future: _placesFuture,
+          builder: (context, snapshot) => snapshot.connectionState ==
+                  ConnectionState.waiting
+              ? const Center(child: CircularProgressIndicator())
+              : ListView.builder(
+                  itemCount: places.length,
+                  itemBuilder: (context, index) {
+                    final place = places[index];
+                    return Dismissible(
+                      key: ValueKey(place.id),
+                      background: Container(
+                        color: theme.colorScheme.error,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      onDismissed: (direction) =>
+                          _onDismissed(context, placesNotifier, place),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: MemoryImage(place.imageBytes),
+                        ),
+                        title: Text(place.title, style: textStyle),
+                        subtitle: Text(place.address, style: subtitleStyle),
+                        onTap: () {
+                          Navigator.of(context).pushNamed(
+                            Routes.placeDetails.path,
+                            arguments: place,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ));
     }
 
     return Scaffold(
